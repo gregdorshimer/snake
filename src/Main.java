@@ -15,7 +15,7 @@ public class Main {
     private static final int BALL_RAD = 5;
     private static final int MOVE_DIST = BALL_RAD * 2;
     private static final int FRAME_SIZE = 500;
-    private static final int SNAKE_COLOR = 0xa52a2a; // RGB -> 165,42,42
+    static final int SNAKE_COLOR = 0xa52a2a; // RGB -> 165,42,42
     static final int APPLE_COLOR = 0xff0000; // RGB -> 255,0,0
     private static final int TICK_TIME = 800 / LEVEL;
     private static final int STARTING_LIVES = max(0, 4 - LEVEL);
