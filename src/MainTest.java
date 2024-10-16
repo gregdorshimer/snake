@@ -79,7 +79,7 @@ public class MainTest {
 
     @Test
     void moveBallsTest() {
-        
+
     }
 
     @Test
