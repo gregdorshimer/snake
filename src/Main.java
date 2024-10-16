@@ -42,7 +42,7 @@ public class Main {
                     // gameOver();
                     break;
                 }
-                if (outOfBounds() || selfEat()) {
+                if (outOfBounds(snake) || selfEat(snake)) {
                     loseLife();
                 }
                 if (gotApple()) {
@@ -127,18 +127,18 @@ public class Main {
     }
 
     // checks if the snake is eating itself
-    static boolean selfEat() {
-        ArrayList<Ball> restOfSnake = new ArrayList<Ball>(snake.subList(1, snake.size()));
-        return overlapList(snake.getFirst(), restOfSnake);
+    static boolean selfEat(ArrayList<Ball> balls) {
+        ArrayList<Ball> restOfSnake = new ArrayList<Ball>(balls.subList(1, balls.size()));
+        return overlapList(balls.getFirst(), restOfSnake);
     }
 
     // returns if the snake is running off the screen
-    static boolean outOfBounds() {
+    static boolean outOfBounds(ArrayList<Ball> balls) {
         // only have to check first segment because subsequent segments follow the first's path
-        return snake.getFirst().x < BALL_RAD ||
-                snake.getFirst().x > FRAME_SIZE - BALL_RAD ||
-                snake.getFirst().y < BALL_RAD ||
-                snake.getFirst().y > FRAME_SIZE - BALL_RAD;
+        return balls.getFirst().x < BALL_RAD ||
+                balls.getFirst().x > FRAME_SIZE - BALL_RAD ||
+                balls.getFirst().y < BALL_RAD ||
+                balls.getFirst().y > FRAME_SIZE - BALL_RAD;
     }
 
     // events for when a player loses a life
