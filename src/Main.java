@@ -7,14 +7,13 @@ import static java.lang.Math.max;
 // TODO read key-event
 // TODO create game-over screen
 // TODO sounds
-// TODO allow choosing a level when calling Main.main i.e. pass level in String[] args
+// TODO allow choosing a level when calling Main.main() i.e. pass level as String[] args
 
 public class Main {
     // WORLD CONSTANTS
     private static final int LEVEL = 1;
-    private static final int BALL_RAD = 5;
-    private static final int MOVE_DIST = BALL_RAD * 2;
-    private static final int FRAME_SIZE = 500;
+    static final int BALL_RAD = 5;
+    static final int FRAME_SIZE = 500;
     static final int SNAKE_COLOR = 0xa52a2a; // RGB -> 165,42,42
     static final int APPLE_COLOR = 0xff0000; // RGB -> 255,0,0
     private static final int TICK_TIME = 800 / LEVEL;
@@ -30,12 +29,12 @@ public class Main {
     public static void main(String[] args) {
 
         // initialize game data
-        Ball apple;
-        genApple();
         snake = initSnake();
+        Ball apple = genApple(snake);
         apples = 0;
         lives = STARTING_LIVES;
 
+        // begin game loop
         long time = System.currentTimeMillis();
         while (true) {
             if ((System.currentTimeMillis() - time) > TICK_TIME) {
@@ -47,7 +46,7 @@ public class Main {
                     loseLife();
                 }
                 if (gotApple()) {
-                    genApple();
+                    genApple(snake);
                     growSnake(snake);
                     apples++;
                 }
@@ -58,24 +57,22 @@ public class Main {
         }
     }
 
+    static ArrayList<Ball> initSnake() {
+        ArrayList<Ball> list = new ArrayList<Ball>();
+        list.add(new Ball("snake", SNAKE_COLOR, FRAME_SIZE / 2, FRAME_SIZE / 2, ""));
+        return list;
+    }
+
     // generates a new apple with random coordinates in the window
-    static void genApple() {
-        Ball newApple;
+    static Ball genApple(ArrayList<Ball> snake) {
         while (true) {
             int x = (int)(Math.round(Math.random() * FRAME_SIZE)) % (2 * BALL_RAD) + BALL_RAD;
             int y = (int)(Math.round(Math.random() * FRAME_SIZE)) % (2 * BALL_RAD) + BALL_RAD;
-            newApple = Ball.makeApple(x, y);
+            Ball newApple = Ball.makeApple(x, y);
             if (!overlapList(newApple, snake)) {
-                apple = newApple;
-                return;
+                return newApple;
             }
         }
-    }
-
-    static ArrayList<Ball> initSnake() {
-        ArrayList<Ball> list = new ArrayList<Ball>();
-        list.add(new Ball("snake", SNAKE_COLOR, FRAME_SIZE / 2, FRAME_SIZE / 2, "right"));
-        return list;
     }
 
     // returns whether the two given balls overlap
@@ -121,7 +118,7 @@ public class Main {
             case "left" -> x += 2 * BALL_RAD;
             default -> x -= 2 * BALL_RAD;
         }
-        snake.addLast(new Ball("snake", SNAKE_COLOR, x, y, balls.getLast().dir));
+        balls.addLast(new Ball("snake", SNAKE_COLOR, x, y, balls.getLast().dir));
     }
 
     // returns if the snake caught the apple
@@ -148,7 +145,7 @@ public class Main {
     static void loseLife() {
         lives--;
         snake = initSnake();
-        genApple();
+        genApple(snake);
     }
 
     // events for when player runs out of lives

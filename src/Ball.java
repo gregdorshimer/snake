@@ -15,6 +15,14 @@ public class Ball {
         this.dir = dir;
     }
 
+    public boolean equals(Ball other) {
+        return this.type.equals(other.type) &&
+                this.color == other.color &&
+                this.x == other.x &&
+                this.y == other.y &&
+                this.dir.equals(other.dir);
+    }
+
     static Ball makeApple(int x, int y) {
         return new Ball("apple", Main.APPLE_COLOR, x, y, "up");
     }
@@ -22,8 +30,8 @@ public class Ball {
     // moves the ball one unit of movement in its direction
     void moveBall(int dist) {
         switch (this.dir) {
-            case "up" -> this.y += dist;
-            case "down" -> this.y -= dist;
+            case "up" -> this.y -= dist;
+            case "down" -> this.y += dist;
             case "left" -> this.x -= dist;
             case "right" -> this.x += dist;
         }
