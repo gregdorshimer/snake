@@ -1,15 +1,16 @@
+import javax.swing.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 import static java.lang.Math.max;
 
-// TODO junit testing of methods
 // TODO display
 // TODO read key-event
 // TODO create game-over screen
 // TODO sounds
 // TODO allow choosing a level when calling Main.main() i.e. pass level as String[] args
 
-public class Main {
+public class Main extends JFrame {
     // WORLD CONSTANTS
     private static final int LEVEL = 1;
     static final int BALL_RAD = 5;
@@ -30,9 +31,17 @@ public class Main {
 
         // initialize game data
         snake = initSnake();
-        Ball apple = genApple(snake);
+        apple = genApple(snake);
         apples = 0;
         lives = STARTING_LIVES;
+
+        // initialize display, input listener
+        JFrame frame = new JFrame("Snake");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addKeyListener(new UserInputListener());
+        frame.pack();
+        frame.setVisible(true);
+
 
         // begin game loop
         long time = System.currentTimeMillis();
@@ -152,5 +161,10 @@ public class Main {
     static void gameOver() {
         // TODO show screen with number of apples collected
         // break out of time loop
+    }
+
+    static void directSnake(String s) {
+        // System.out.println(s);
+        snake.getFirst().dir = s.toLowerCase();
     }
 }
