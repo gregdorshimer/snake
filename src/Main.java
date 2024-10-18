@@ -1,22 +1,23 @@
 import javax.swing.*;
-import java.awt.event.KeyEvent;
+import java.awt.*;
 import java.util.ArrayList;
 
 import static java.lang.Math.max;
 
-// TODO display
-// TODO read key-event
+// TODO troubleshoot game mechanics
 // TODO create game-over screen
 // TODO sounds
 // TODO allow choosing a level when calling Main.main() i.e. pass level as String[] args
 
 public class Main extends JFrame {
-    // WORLD CONSTANTS
+    // game constants
     private static final int LEVEL = 1;
     static final int BALL_RAD = 5;
     static final int FRAME_SIZE = 500;
-    static final int SNAKE_COLOR = 0xa52a2a; // RGB -> 165,42,42
-    static final int APPLE_COLOR = 0xff0000; // RGB -> 255,0,0
+    static final int SNAKE_COLOR = 0x9F2424; // RGB -> 165,42,42
+    static final int APPLE_COLOR = 0x41B324; // RGB -> 255,0,0
+    static final Color red = new Color(SNAKE_COLOR);
+    static final Color green = new Color(APPLE_COLOR);
     private static final int TICK_TIME = 800 / LEVEL;
     private static final int STARTING_LIVES = max(0, 4 - LEVEL);
 
@@ -25,6 +26,7 @@ public class Main extends JFrame {
     static Ball apple;
     static int lives;
     static int apples;
+    static JFrame frame;
 
 
     public static void main(String[] args) {
@@ -36,11 +38,7 @@ public class Main extends JFrame {
         lives = STARTING_LIVES;
 
         // initialize display, input listener
-        JFrame frame = new JFrame("Snake");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.addKeyListener(new UserInputListener());
-        frame.pack();
-        frame.setVisible(true);
+        frame = createWindow(FRAME_SIZE);
 
 
         // begin game loop
@@ -60,13 +58,47 @@ public class Main extends JFrame {
                     apples++;
                 }
                 moveBalls(snake);
-                // TODO read key event
+                frame.repaint();
                 time = System.currentTimeMillis();
             }
         }
     }
 
+    public static JFrame createWindow(int size) {
+        JFrame frame = new JFrame("Snake"); // set window title
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // terminate java program when window is closed
+        frame.addKeyListener(new UserInputListener()); // add KeyListener to the JFrame to capture key input
+        frame.setLocationRelativeTo(null); // make window appear in the middle of the screen
+        frame.setSize(size, size); // define dimensions of frame
+        frame.setVisible(true); // display frame
+
+        SnakePanel panel = new SnakePanel();
+        panel.setOpaque(false);
+        frame.add(panel);
+
+        return frame;
+    }
+
+    static class SnakePanel extends JPanel {
+        public SnakePanel() {
+            super();
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.setColor(green);
+            g.fillOval(apple.x - BALL_RAD, apple.y - BALL_RAD, BALL_RAD * 2, BALL_RAD * 2);
+            g.setColor(red);
+            for (Ball segment : snake) {
+                g.fillOval(segment.x - BALL_RAD, segment.y - BALL_RAD, BALL_RAD * 2, BALL_RAD * 2);
+            }
+        }
+    }
+
     static ArrayList<Ball> initSnake() {
+        // TODO consider starting with 3 segments
+        // TODO check position/modulo so that it's aligned with apple
         ArrayList<Ball> list = new ArrayList<Ball>();
         list.add(new Ball("snake", SNAKE_COLOR, FRAME_SIZE / 2, FRAME_SIZE / 2, ""));
         return list;
@@ -74,6 +106,8 @@ public class Main extends JFrame {
 
     // generates a new apple with random coordinates in the window
     static Ball genApple(ArrayList<Ball> snake) {
+        // TODO check randomness of generation
+        // TODO check position/modulo so that it's aligned with snake
         while (true) {
             int x = (int)(Math.round(Math.random() * FRAME_SIZE)) % (2 * BALL_RAD) + BALL_RAD;
             int y = (int)(Math.round(Math.random() * FRAME_SIZE)) % (2 * BALL_RAD) + BALL_RAD;
@@ -108,7 +142,7 @@ public class Main extends JFrame {
                 case "up" -> balls.get(i).y -= 2 * BALL_RAD;
                 case "down" -> balls.get(i).y += 2 * BALL_RAD;
                 case "left" -> balls.get(i).x -= 2 * BALL_RAD;
-                default -> balls.get(i).x += 2 * BALL_RAD;
+                case "right" -> balls.get(i).x += 2 * BALL_RAD;
             }
             // update its direction, except for first ball
             if (i != 0) {
