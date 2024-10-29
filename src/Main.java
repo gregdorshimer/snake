@@ -4,16 +4,16 @@ import java.util.ArrayList;
 
 import static java.lang.Math.max;
 
-// TODO troubleshoot game mechanics
+// TODO troubleshoot window display size
 // TODO create game-over screen
 // TODO sounds
 // TODO allow choosing a level when calling Main.main() i.e. pass level as String[] args
 
 public class Main extends JFrame {
     // game constants
-    private static final int LEVEL = 1;
+    private static final int LEVEL = 3;
     static final int BALL_RAD = 5;
-    static final int FRAME_SIZE = 500;
+    static final int FRAME_SIZE = 410;
     static final int SNAKE_COLOR = 0x9F2424; // RGB -> 165,42,42
     static final int APPLE_COLOR = 0x41B324; // RGB -> 255,0,0
     static final Color red = new Color(SNAKE_COLOR);
@@ -43,25 +43,27 @@ public class Main extends JFrame {
 
         // begin game loop
         long time = System.currentTimeMillis();
-        while (true) {
+        boolean gameOver = false;
+        while (!gameOver) {
             if ((System.currentTimeMillis() - time) > TICK_TIME) {
-                if (lives <= 0) {
-                    // gameOver();
-                    break;
-                }
+                moveBalls(snake);
+                frame.repaint();
                 if (outOfBounds(snake) || selfEat(snake)) {
                     loseLife();
+                    // System.out.println("lost a life");
+                }
+                if (lives < 0) {
+                    gameOver = true;
                 }
                 if (gotApple()) {
-                    genApple(snake);
+                    apple = genApple(snake);
                     growSnake(snake);
                     apples++;
                 }
-                moveBalls(snake);
-                frame.repaint();
                 time = System.currentTimeMillis();
             }
         }
+        gameOver();
     }
 
     public static JFrame createWindow(int size) {
@@ -70,6 +72,9 @@ public class Main extends JFrame {
         frame.addKeyListener(new UserInputListener()); // add KeyListener to the JFrame to capture key input
         frame.setLocationRelativeTo(null); // make window appear in the middle of the screen
         frame.setSize(size, size); // define dimensions of frame
+        frame.setPreferredSize(new Dimension(size, size));
+        frame.setMinimumSize(new Dimension(size, size));
+        frame.setMaximumSize(new Dimension(size, size));
         frame.setVisible(true); // display frame
 
         SnakePanel panel = new SnakePanel();
@@ -98,19 +103,20 @@ public class Main extends JFrame {
 
     static ArrayList<Ball> initSnake() {
         // TODO consider starting with 3 segments
-        // TODO check position/modulo so that it's aligned with apple
         ArrayList<Ball> list = new ArrayList<Ball>();
         list.add(new Ball("snake", SNAKE_COLOR, FRAME_SIZE / 2, FRAME_SIZE / 2, ""));
+        // System.out.println("snake: (" + list.getFirst().x + ", " + list.getFirst().y + ")");
         return list;
     }
 
     // generates a new apple with random coordinates in the window
     static Ball genApple(ArrayList<Ball> snake) {
-        // TODO check randomness of generation
-        // TODO check position/modulo so that it's aligned with snake
         while (true) {
-            int x = (int)(Math.round(Math.random() * FRAME_SIZE)) % (2 * BALL_RAD) + BALL_RAD;
-            int y = (int)(Math.round(Math.random() * FRAME_SIZE)) % (2 * BALL_RAD) + BALL_RAD;
+            int x = (int)(Math.round(Math.random() * FRAME_SIZE));
+            x = x - (x % (2 * BALL_RAD)) + BALL_RAD;
+            int y = (int)(Math.round(Math.random() * FRAME_SIZE));
+            y = y - (y % (2 * BALL_RAD)) + BALL_RAD;
+            // System.out.println("apple: (" + x + ", " + y + ")");
             Ball newApple = Ball.makeApple(x, y);
             if (!overlapList(newApple, snake)) {
                 return newApple;
@@ -135,19 +141,18 @@ public class Main extends JFrame {
 
     // moves a list of balls according to each ball's direction
     static void moveBalls(ArrayList<Ball> balls) {
-        for (int i = 0; i < balls.size(); i++) {
-            String dir = balls.get(i).dir;
+        for (Ball ball : balls) {
+            String dir = ball.dir;
             // move ball
             switch (dir) {
-                case "up" -> balls.get(i).y -= 2 * BALL_RAD;
-                case "down" -> balls.get(i).y += 2 * BALL_RAD;
-                case "left" -> balls.get(i).x -= 2 * BALL_RAD;
-                case "right" -> balls.get(i).x += 2 * BALL_RAD;
+                case "up" -> ball.y -= 2 * BALL_RAD;
+                case "down" -> ball.y += 2 * BALL_RAD;
+                case "left" -> ball.x -= 2 * BALL_RAD;
+                case "right" -> ball.x += 2 * BALL_RAD;
             }
-            // update its direction, except for first ball
-            if (i != 0) {
-                balls.get(i).dir = balls.get(i - 1).dir;
-            }
+        }
+        for (int i = balls.size() - 1; i > 0; i--) {
+            balls.get(i).dir = balls.get(i -1).dir;
         }
     }
 
@@ -178,27 +183,29 @@ public class Main extends JFrame {
     // returns if the snake is running off the screen
     static boolean outOfBounds(ArrayList<Ball> balls) {
         // only have to check first segment because subsequent segments follow the first's path
-        return balls.getFirst().x < BALL_RAD ||
-                balls.getFirst().x > FRAME_SIZE - BALL_RAD ||
-                balls.getFirst().y < BALL_RAD ||
-                balls.getFirst().y > FRAME_SIZE - BALL_RAD;
+        if (balls.getFirst().x < BALL_RAD ||
+            balls.getFirst().x > (FRAME_SIZE - BALL_RAD) ||
+            balls.getFirst().y < BALL_RAD ||
+            balls.getFirst().y > (FRAME_SIZE - BALL_RAD)) {
+            System.out.println("out of bounds: (" + balls.getFirst().x + ", " + balls.getFirst().y + ")");
+            return true;
+        } else { return false; }
     }
 
     // events for when a player loses a life
     static void loseLife() {
         lives--;
         snake = initSnake();
-        genApple(snake);
+        apple = genApple(snake);
     }
 
     // events for when player runs out of lives
     static void gameOver() {
-        // TODO show screen with number of apples collected
-        // break out of time loop
+        // TODO show screen with number of apples collected and level
+        System.out.println("gameOver();");
     }
 
     static void directSnake(String s) {
-        // System.out.println(s);
         snake.getFirst().dir = s.toLowerCase();
     }
 }
