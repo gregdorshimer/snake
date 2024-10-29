@@ -3,9 +3,14 @@ import java.awt.*;
 import java.util.ArrayList;
 
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 
-// TODO troubleshoot window display size
 // TODO create game-over screen
+// TODO pause button
+// TODO difficulty display
+// TODO score display
+// TODO lives display
+// TODO start screen, with choices for game options
 // TODO sounds
 // TODO allow choosing a level when calling Main.main() i.e. pass level as String[] args
 
@@ -18,8 +23,8 @@ public class Main extends JFrame {
     static final int APPLE_COLOR = 0x41B324; // RGB -> 255,0,0
     static final Color red = new Color(SNAKE_COLOR);
     static final Color green = new Color(APPLE_COLOR);
-    private static final int TICK_TIME = 800 / LEVEL;
-    private static final int STARTING_LIVES = max(0, 4 - LEVEL);
+    private static final int TICK_TIME = 800 - min(700, (LEVEL * 100));
+    private static final int STARTING_LIVES = 0; // max(0, 4 - LEVEL);
 
     // game data
     static ArrayList<Ball> snake;
@@ -27,6 +32,8 @@ public class Main extends JFrame {
     static int lives;
     static int apples;
     static JFrame frame;
+    static JPanel mySnakePanel;
+    static JPanel gameOverPanel;
 
 
     public static void main(String[] args) {
@@ -71,15 +78,11 @@ public class Main extends JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // terminate java program when window is closed
         frame.addKeyListener(new UserInputListener()); // add KeyListener to the JFrame to capture key input
         frame.setLocationRelativeTo(null); // make window appear in the middle of the screen
-        frame.setSize(size, size); // define dimensions of frame
-        frame.setPreferredSize(new Dimension(size, size));
-        frame.setMinimumSize(new Dimension(size, size));
-        frame.setMaximumSize(new Dimension(size, size));
+        frame.setSize(size, size + 37); // define dimensions of frame
         frame.setVisible(true); // display frame
-
-        SnakePanel panel = new SnakePanel();
-        panel.setOpaque(false);
-        frame.add(panel);
+        mySnakePanel = new SnakePanel();
+        mySnakePanel.setOpaque(false);
+        frame.add(mySnakePanel);
 
         return frame;
     }
@@ -183,13 +186,10 @@ public class Main extends JFrame {
     // returns if the snake is running off the screen
     static boolean outOfBounds(ArrayList<Ball> balls) {
         // only have to check first segment because subsequent segments follow the first's path
-        if (balls.getFirst().x < BALL_RAD ||
-            balls.getFirst().x > (FRAME_SIZE - BALL_RAD) ||
-            balls.getFirst().y < BALL_RAD ||
-            balls.getFirst().y > (FRAME_SIZE - BALL_RAD)) {
-            System.out.println("out of bounds: (" + balls.getFirst().x + ", " + balls.getFirst().y + ")");
-            return true;
-        } else { return false; }
+        return balls.getFirst().x < BALL_RAD ||
+                balls.getFirst().x > (FRAME_SIZE - BALL_RAD) ||
+                balls.getFirst().y < BALL_RAD ||
+                balls.getFirst().y > (FRAME_SIZE - BALL_RAD);
     }
 
     // events for when a player loses a life
@@ -203,6 +203,13 @@ public class Main extends JFrame {
     static void gameOver() {
         // TODO show screen with number of apples collected and level
         System.out.println("gameOver();");
+        JLabel text = new JLabel("GAME OVER");
+        gameOverPanel = new JPanel();
+        gameOverPanel.add(text);
+        frame.remove(mySnakePanel);
+        frame.add(gameOverPanel);
+        frame.repaint();
+        System.out.println("repainted");
     }
 
     static void directSnake(String s) {
